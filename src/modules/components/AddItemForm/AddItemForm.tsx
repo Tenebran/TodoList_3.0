@@ -1,18 +1,21 @@
 import { IconButton, TextField } from '@material-ui/core';
 import { AddBox } from '@material-ui/icons';
-import React, { ChangeEvent, KeyboardEvent, useState } from 'react';
+import React, { ChangeEvent, KeyboardEvent, useCallback, useState } from 'react';
 
 type addItemForPropsType = {
   addItem: (title: string) => void;
 };
 
-export default function AddItemForm(props: addItemForPropsType) {
+const AddItemForm = React.memo((props: addItemForPropsType) => {
+  console.log('add ItemForm');
   let [title, setTitle] = useState('');
   let [error, setError] = useState<null | string>(null);
 
   const onChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setTitle(e.currentTarget.value);
-    setError(null);
+    if (error !== null) {
+      setError(null);
+    }
   };
 
   const onKeyPressHandler = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -28,6 +31,7 @@ export default function AddItemForm(props: addItemForPropsType) {
       setError('Title is requared');
     }
     setTitle('');
+    setError(null);
   };
 
   return (
@@ -47,4 +51,6 @@ export default function AddItemForm(props: addItemForPropsType) {
       </IconButton>
     </div>
   );
-}
+});
+
+export default AddItemForm;
