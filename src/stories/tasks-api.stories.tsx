@@ -13,12 +13,13 @@ const settings = {
   },
 };
 
-const todolistID = '7821570e-c2f6-42b0-8aed-ff42d559efc1';
+const todolistID = '4b362fd7-d359-4358-b7f0-d9a9ba950573';
 
-export const GetTodolists = () => {
+export const GetTasks = () => {
   const [state, setState] = useState<any>(null);
+  const todolistID = '4b362fd7-d359-4358-b7f0-d9a9ba950573';
   useEffect(() => {
-    todolistsAPI.getTodolists().then(res => {
+    todolistsAPI.getTasks(todolistID).then(res => {
       setState(res.data);
     });
   }, []);
@@ -36,11 +37,12 @@ export const CreateTodolist = () => {
 
   return <div> {JSON.stringify(state)}</div>;
 };
-export const DeleteTodolist = () => {
+export const DeleteTasks = () => {
   const [state, setState] = useState<any>(null);
-  const todolisID = 'b4c6442d-2861-4547-b975-c9c4c4465e30';
+  const todolisID = '4b362fd7-d359-4358-b7f0-d9a9ba950573';
+  const taskId = '';
   useEffect(() => {
-    todolistsAPI.deleteTodoList(todolisID).then(res => {
+    todolistsAPI.deleteTasks(todolistID, taskId).then(res => {
       setState(res.data);
     });
   }, []);

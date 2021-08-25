@@ -1,53 +1,58 @@
-import { IconButton, TextField } from '@material-ui/core';
-import { AddBox } from '@material-ui/icons';
-import React, { ChangeEvent, KeyboardEvent, useCallback, useState } from 'react';
+import React, { ChangeEvent, useState, KeyboardEvent } from 'react';
+import './AddItemForm.scss';
+import TextField from '@material-ui/core/TextField';
+import IconButton from '@material-ui/core/IconButton';
+import NoteAddIcon from '@material-ui/icons/NoteAdd';
 
-type addItemForPropsType = {
-  addItem: (title: string) => void;
+type addItemFormPropsType = {
+  addItem: (newValue: string) => void;
 };
 
-const AddItemForm = React.memo((props: addItemForPropsType) => {
-  console.log('add ItemForm');
-  let [title, setTitle] = useState('');
-  let [error, setError] = useState<null | string>(null);
+const AddItemForm = React.memo((props: addItemFormPropsType) => {
+  let [newTaskTitle, setNewTaskTitle] = useState('');
+  let [error, setError] = useState<string | null>(null);
 
   const onChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.currentTarget.value);
-    if (error !== null) {
+    setNewTaskTitle(e.currentTarget.value);
+  };
+
+  const addTask = () => {
+    if (newTaskTitle.trim() !== '') {
+      props.addItem(newTaskTitle);
+      setNewTaskTitle('');
       setError(null);
+    } else {
+      setError('Field is required');
     }
   };
 
   const onKeyPressHandler = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (error !== null) {
+      setError(null);
+    }
     if (e.key === 'Enter') {
-      addItem();
+      if (newTaskTitle.trim() !== '') {
+        props.addItem(newTaskTitle);
+        setNewTaskTitle('');
+      } else {
+        setError('Field is required');
+      }
     }
-  };
-
-  const addItem = () => {
-    if (title.trim() !== '') {
-      props.addItem(title.trim());
-    } else {
-      setError('Title is requared');
-    }
-    setTitle('');
-    setError(null);
   };
 
   return (
     <div>
       <TextField
-        value={title}
+        variant="outlined"
+        size="small"
+        label={!!error ? error : 'Type Text'}
+        error={!!error}
+        value={newTaskTitle}
         onChange={onChangeHandler}
         onKeyPress={onKeyPressHandler}
-        label={error ? error : 'Type Text'}
-        variant={'outlined'}
-        size={'small'}
-        error={!!error}
-        helperText={error ? error : ''}
       />
-      <IconButton onClick={addItem} color={'primary'} size={'small'}>
-        <AddBox fontSize={'large'} />
+      <IconButton color="primary" onClick={addTask} size="small">
+        <NoteAddIcon fontSize="large" />
       </IconButton>
     </div>
   );

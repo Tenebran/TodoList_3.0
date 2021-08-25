@@ -1,14 +1,23 @@
 import React from 'react';
+import './Button.scss';
+import Button from '@material-ui/core/Button';
 
-type propsType = {
+type ButtonPropsType = {
+  title: string;
   callBack: () => void;
-  value: string;
+  nameClass: string;
 };
 
-const Button = React.memo((props: propsType) => {
-  const onClickHandler = () => props.callBack();
-
-  return <button onClick={onClickHandler}>{props.value}</button>;
+const ButtonFilter = React.memo((props: ButtonPropsType) => {
+  return (
+    <Button
+      color={props.nameClass ? 'primary' : 'default'}
+      variant="contained"
+      className={props.nameClass}
+      onClick={props.callBack}
+    >
+      {props.title}
+    </Button>
+  );
 });
-
-export default Button;
+export default ButtonFilter;
