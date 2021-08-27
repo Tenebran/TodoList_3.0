@@ -107,7 +107,6 @@ const App = React.memo(() => {
                     removeTodolist={removeTodolist}
                     changeTodolistTitle={changeTodolistTitle}
                     addTaskAC={addTaskAC}
-                    changeTaskStatusAC={changeTaskStatusAC}
                     changeTaskTitleAC={changeTaskTitleAC}
                   />
                 </Paper>

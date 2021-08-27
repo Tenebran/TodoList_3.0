@@ -13,17 +13,22 @@ type TaskProps = {
   id: string;
   task: TaskType;
   addTaskAC: (task: TaskType) => void;
-  changeTaskStatusAC: (taskId: string, status: boolean, todolistId: string) => void;
   changeTaskTitleAC: (taskId: string, title: string, todolistId: string) => void;
 };
 
 const Task = React.memo((props: TaskProps) => {
   const dispatch = useDispatch();
   const onClickHandlerRemove = () => dispatch(removeTaskTC(props.task.id, props.id));
-  const changeStatus = () => {
-    dispatch(updateTaskStatusTC(props.task.id, props.id));
+  const changeStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    let newIsDoneValue = e.currentTarget.checked;
+    dispatch(
+      updateTaskStatusTC(
+        props.id,
+        props.task.id,
+        newIsDoneValue ? TaskStatuses.Completed : TaskStatuses.New
+      )
+    );
   };
-
   const changeTitleHandler = useCallback(
     (newValue: string) => {
       dispatch(props.changeTaskTitleAC(props.task.id, newValue, props.id));
@@ -37,8 +42,8 @@ const Task = React.memo((props: TaskProps) => {
         icon={<FavoriteBorder />}
         checkedIcon={<Favorite />}
         name="checked"
-        checked={props.task.completed}
-        onChange={() => changeStatus()}
+        checked={props.task.status === TaskStatuses.Completed ? true : false}
+        onChange={e => changeStatusHandler(e)}
       />
 
       <EditTableSpan

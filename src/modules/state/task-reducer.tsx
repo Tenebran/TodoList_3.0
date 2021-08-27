@@ -66,11 +66,12 @@ export const tasksReducer = (
     }
 
     case CHANGE_TASK_STATUS: {
-      let todolistTask = state[action.todolistId];
-      state[action.todolistId] = todolistTask.map(list =>
-        list.id === action.taskId ? { ...list, completed: action.completed } : list
+      let todolistTasks = state[action.todolistId];
+      let newTasksArray = todolistTasks.map(t =>
+        t.id === action.taskId ? { ...t, status: action.status } : t
       );
 
+      state[action.todolistId] = newTasksArray;
       return { ...state };
     }
 
@@ -108,11 +109,11 @@ export const addTaskAC = (task: TaskType) => {
   } as const;
 };
 
-export const changeTaskStatusAC = (taskId: string, completed: boolean, todolistId: string) => {
+export const changeTaskStatusAC = (taskId: string, todolistId: string, status: TaskStatuses) => {
   return {
     type: CHANGE_TASK_STATUS,
     taskId,
-    completed,
+    status,
     todolistId,
   } as const;
 };
@@ -154,16 +155,31 @@ export const addTaskTC = (todoID: string, taskTitle: string) => (dispatch: Dispa
   });
 };
 
-export const updateTaskStatusTC = (todoId: string, taskId: string) => (
+export const updateTaskStatusTC = (todoId: string, taskId: string, status: TaskStatuses) => (
   dispatch: Dispatch,
   getState: () => AppRootState
 ) => {
   const appState = getState();
   const allTasks = appState.task;
   const tasksForClickedTodo = allTasks[todoId];
+
   const clickedTask = tasksForClickedTodo.find(t => {
     return t.id === taskId;
   });
-  const model: UpdateTaskType = { title: clickedTask.title, status };
-  todolistsAPI.updateTask(todoId, taskId, model).then(res => {});
+
+  if (clickedTask) {
+    const model: UpdateTaskType = {
+      title: clickedTask.title,
+      status,
+      priority: clickedTask.priority,
+      description: clickedTask.description,
+      startDate: clickedTask.startDate,
+      deadline: clickedTask.deadline,
+      completed: clickedTask.completed,
+    };
+
+    todolistsAPI.updateTask(todoId, taskId, model).then(res => {
+      dispatch(changeTaskStatusAC(taskId, todoId, status));
+    });
+  }
 };

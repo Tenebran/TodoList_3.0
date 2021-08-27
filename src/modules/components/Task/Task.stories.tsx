@@ -15,7 +15,7 @@ export default {
 } as ComponentMeta<typeof Task>;
 
 const addTaskCallback = action('Add Task');
-const changeTaskStatusCallback = action('Status changed');
+// const changeTaskStatusCallback = action('Status changed');
 const changeTaskTitleCallback = action('Title Changed');
 // const removeTaskCallback = action('Task Removed');
 
@@ -38,7 +38,7 @@ export const TaskBaseExample = () => {
         }}
         id={'5'}
         addTaskAC={addTaskCallback}
-        changeTaskStatusAC={changeTaskStatusCallback}
+        // changeTaskStatusAC={changeTaskStatusCallback}
         changeTaskTitleAC={changeTaskTitleCallback}
         // removeTaskAC={removeTaskCallback}
       />
@@ -58,7 +58,7 @@ export const TaskBaseExample = () => {
         }}
         id={'6'}
         addTaskAC={addTaskCallback}
-        changeTaskStatusAC={changeTaskStatusCallback}
+        // changeTaskStatusAC={changeTaskStatusCallback}
         changeTaskTitleAC={changeTaskTitleCallback}
         // removeTaskAC={removeTaskCallback}
       />
