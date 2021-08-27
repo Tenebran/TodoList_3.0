@@ -109,7 +109,6 @@ const App = React.memo(() => {
                     addTaskAC={addTaskAC}
                     changeTaskStatusAC={changeTaskStatusAC}
                     changeTaskTitleAC={changeTaskTitleAC}
-                    removeTaskAC={removeTaskAC}
                   />
                 </Paper>
               </Grid>

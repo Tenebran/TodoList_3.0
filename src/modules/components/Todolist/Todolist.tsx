@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import './Todolist.scss';
 import AddItemForm from '../AddItemForm/AddItemForm';
 import ButtonFilter from '../Button/Button';
@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppRootState } from '../../state/store/store';
 import { KeyType } from '../../state/todolists-reducer';
 import { TaskStatuses, TaskType } from '../../../api/todolists-api';
-
+import { addTaskTC, fetchTasksTC } from '../../state/task-reducer';
 // export type TasksType = {
 //   id: string;
 //   title: string;
@@ -24,15 +24,18 @@ type PropsType = {
   id: string;
   removeTodolist: (id: string) => void;
   changeTodolistTitle: (id: string, title: string) => void;
-  addTaskAC: (newTodolistTitle: string, id: string) => void;
+  addTaskAC: (task: TaskType) => void;
   changeTaskStatusAC: (taskId: string, status: boolean, todolistId: string) => void;
   changeTaskTitleAC: (taskId: string, title: string, todolistId: string) => void;
-  removeTaskAC: (taskId: string, todolistId: string) => void;
 };
 
 const Todolist = React.memo((props: PropsType) => {
   const dispatch = useDispatch();
   const tasks = useSelector<AppRootState, Array<TaskType>>(state => state.task[props.id]);
+
+  useEffect(() => {
+    dispatch(fetchTasksTC(props.id));
+  }, []);
 
   const changeAllFilter = useCallback(() => props.changeFilter('all', props.id), [props]);
   const changeActiveFilter = useCallback(() => props.changeFilter('active', props.id), [props]);
@@ -53,7 +56,7 @@ const Todolist = React.memo((props: PropsType) => {
 
   const addTask = useCallback(
     (title: string) => {
-      dispatch(props.addTaskAC(title, props.id));
+      dispatch(addTaskTC(props.id, title));
     },
     [dispatch, props]
   );
@@ -86,7 +89,6 @@ const Todolist = React.memo((props: PropsType) => {
             addTaskAC={props.addTaskAC}
             changeTaskStatusAC={props.changeTaskStatusAC}
             changeTaskTitleAC={props.changeTaskTitleAC}
-            removeTaskAC={props.removeTaskAC}
           />
         ))}
       </ul>

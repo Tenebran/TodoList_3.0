@@ -17,7 +17,7 @@ export default {
 const addTaskCallback = action('Add Task');
 const changeTaskStatusCallback = action('Status changed');
 const changeTaskTitleCallback = action('Title Changed');
-const removeTaskCallback = action('Task Removed');
+// const removeTaskCallback = action('Task Removed');
 
 export const TaskBaseExample = () => {
   return (
@@ -40,7 +40,7 @@ export const TaskBaseExample = () => {
         addTaskAC={addTaskCallback}
         changeTaskStatusAC={changeTaskStatusCallback}
         changeTaskTitleAC={changeTaskTitleCallback}
-        removeTaskAC={removeTaskCallback}
+        // removeTaskAC={removeTaskCallback}
       />
       <Task
         task={{
@@ -60,7 +60,7 @@ export const TaskBaseExample = () => {
         addTaskAC={addTaskCallback}
         changeTaskStatusAC={changeTaskStatusCallback}
         changeTaskTitleAC={changeTaskTitleCallback}
-        removeTaskAC={removeTaskCallback}
+        // removeTaskAC={removeTaskCallback}
       />
     </>
   );

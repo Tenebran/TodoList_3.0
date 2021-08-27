@@ -7,23 +7,23 @@ import './Task.scss';
 import { useDispatch } from 'react-redux';
 import EditTableSpan from '../EditTableSpan/EditTableSpan';
 import { TaskStatuses, TaskType } from '../../../api/todolists-api';
+import { removeTaskTC, updateTaskStatusTC } from '../../state/task-reducer';
 
 type TaskProps = {
   id: string;
   task: TaskType;
-  addTaskAC: (newTodolistTitle: string, id: string) => void;
+  addTaskAC: (task: TaskType) => void;
   changeTaskStatusAC: (taskId: string, status: boolean, todolistId: string) => void;
   changeTaskTitleAC: (taskId: string, title: string, todolistId: string) => void;
-  removeTaskAC: (taskId: string, todolistId: string) => void;
 };
 
 const Task = React.memo((props: TaskProps) => {
   const dispatch = useDispatch();
-  const onClickHandlerRemove = () => dispatch(props.removeTaskAC(props.task.id, props.id));
-  const changeStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    let newIsDoneValue = e.currentTarget.checked;
-    dispatch(props.changeTaskStatusAC(props.task.id, newIsDoneValue, props.id));
+  const onClickHandlerRemove = () => dispatch(removeTaskTC(props.task.id, props.id));
+  const changeStatus = () => {
+    dispatch(updateTaskStatusTC(props.task.id, props.id));
   };
+
   const changeTitleHandler = useCallback(
     (newValue: string) => {
       dispatch(props.changeTaskTitleAC(props.task.id, newValue, props.id));
@@ -38,7 +38,7 @@ const Task = React.memo((props: TaskProps) => {
         checkedIcon={<Favorite />}
         name="checked"
         checked={props.task.completed}
-        onChange={e => changeStatusHandler(e)}
+        onChange={() => changeStatus()}
       />
 
       <EditTableSpan
