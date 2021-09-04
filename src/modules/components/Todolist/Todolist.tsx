@@ -9,13 +9,9 @@ import Task from '../Task/Task';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppRootState } from '../../state/store/store';
 import { KeyType } from '../../state/todolists-reducer';
-import { TaskStatuses, TaskType } from '../../../api/todolists-api';
+import { TaskType } from '../../../api/todolists-api';
 import { addTaskTC, fetchTasksTC, UpdateDomainTaskModelType } from '../../state/task-reducer';
-// export type TasksType = {
-//   id: string;
-//   title: string;
-//   isDone: boolean;
-// };
+import { RequestStatusType } from '../../state/app-reducer';
 
 type PropsType = {
   title: string;
@@ -26,12 +22,13 @@ type PropsType = {
   changeTodolistTitle: (id: string, title: string) => void;
   addTaskAC: (task: TaskType) => void;
   updateTaskTC: (todoId: string, taskId: string, domainModel: UpdateDomainTaskModelType) => void;
+  entityStatus: RequestStatusType;
 };
 
 const Todolist = React.memo((props: PropsType) => {
   const dispatch = useDispatch();
   const tasks = useSelector<AppRootState, Array<TaskType>>(state => state.task[props.id]);
-
+  console.log(props.entityStatus);
   useEffect(() => {
     dispatch(fetchTasksTC(props.id));
   }, []);
@@ -74,11 +71,15 @@ const Todolist = React.memo((props: PropsType) => {
     <div>
       <h3>
         <EditTableSpan title={props.title} onChange={changeTodoListTitle} />
-        <IconButton aria-label="delete" onClick={removeTodoList}>
+        <IconButton
+          aria-label="delete"
+          onClick={removeTodoList}
+          disabled={props.entityStatus === 'loading'}
+        >
           <DeleteIcon />
         </IconButton>
       </h3>
-      <AddItemForm addItem={addTask} />
+      <AddItemForm addItem={addTask} entityStatus={props.entityStatus} />
       <ul className="todolist__list__wrapper">
         {taskTodolist.map(list => (
           <Task

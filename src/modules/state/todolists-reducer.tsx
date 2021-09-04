@@ -1,8 +1,10 @@
+import { AxiosError } from 'axios';
 import { Dispatch } from 'redux';
 import { v1 } from 'uuid';
 import { todolistsAPI, TodoListType } from '../../api/todolists-api';
+import { appSetErrorAC, appSetStatusAC, RequestStatusType } from './app-reducer';
 import { AppRootState } from './store/store';
-
+import { handleServerNetworkError } from '../utils/error-utils';
 export const REMOVE_TODOLIST = 'REMOVE-TODOLIST';
 export const ADD_TODOLIST = 'ADD-TODOLIST';
 const CHANGE_TODOLIST_TITLE = 'CHANGE-TODOLIST-TITLE';
@@ -13,7 +15,8 @@ export type ActionsTypes =
   | ReturnType<typeof AddTodolistAc>
   | ReturnType<typeof changeTodolistTitleAC>
   | ReturnType<typeof changeTodolistFilterAC>
-  | ReturnType<typeof setTodolistsAC>;
+  | ReturnType<typeof setTodolistsAC>
+  | ReturnType<typeof changeTodolistEntityStatusAC>;
 
 export let todolist1 = v1();
 export let todolist2 = v1();
@@ -23,6 +26,7 @@ export type KeyType = 'all' | 'complited' | 'active';
 
 export type TodolistDomainType = TodoListType & {
   filter: KeyType;
+  entityStatus: RequestStatusType;
 };
 
 export const todolistReducer = (
@@ -32,7 +36,7 @@ export const todolistReducer = (
   switch (action.type) {
     case 'SET-TODOLISTS': {
       return action.todolists.map(list => {
-        return { ...list, filter: 'all' };
+        return { ...list, filter: 'all', entityStatus: 'idle' };
       });
     }
 
@@ -40,7 +44,11 @@ export const todolistReducer = (
       return state.filter(list => list.id !== action.id);
 
     case ADD_TODOLIST: {
-      const newTodolist: TodolistDomainType = { ...action.todolist, filter: 'all' };
+      const newTodolist: TodolistDomainType = {
+        ...action.todolist,
+        filter: 'all',
+        entityStatus: 'idle',
+      };
       return [newTodolist, ...state];
     }
 
@@ -57,6 +65,12 @@ export const todolistReducer = (
         todolist.filter = action.filter;
       }
       return [...state];
+    }
+
+    case 'CHANGE-TODOLIST-ENTITY-STATUS': {
+      return state.map(list =>
+        list.id === action.id ? { ...list, entityStatus: action.status } : list
+      );
     }
     default:
       return state;
@@ -95,26 +109,53 @@ export const setTodolistsAC = (todolists: Array<TodoListType>) => {
 };
 
 export const fetchTodolistsThunk = (dispatch: Dispatch, getState: () => AppRootState) => {
+  dispatch(appSetStatusAC('loading'));
   todolistsAPI.getTodolists().then(res => {
     let action = setTodolistsAC(res.data);
     dispatch(action);
+    dispatch(appSetStatusAC('succeeded'));
   });
 };
 
+export const changeTodolistEntityStatusAC = (status: RequestStatusType, id: string) => {
+  return { type: 'CHANGE-TODOLIST-ENTITY-STATUS', status, id } as const;
+};
+
 export const removeTodolistTC = (todolistId: string) => (dispatch: Dispatch) => {
+  dispatch(appSetStatusAC('loading'));
+  dispatch(changeTodolistEntityStatusAC('loading', todolistId));
   todolistsAPI.deleteTodoList(todolistId).then(res => {
-    dispatch(RemoveTodolistAC(todolistId));
+    if (res.data.resultCode === 0) {
+      dispatch(RemoveTodolistAC(todolistId));
+      dispatch(appSetStatusAC('succeeded'));
+    }
   });
 };
 
 export const addTodolistTC = (title: string) => (dispatch: Dispatch) => {
-  todolistsAPI.createTodolists(title).then(resp => {
-    dispatch(AddTodolistAc(resp.data.data.item));
-  });
+  dispatch(appSetStatusAC('loading'));
+
+  todolistsAPI
+    .createTodolists(title)
+    .then(resp => {
+      if (resp.data.resultCode === 0) {
+        dispatch(AddTodolistAc(resp.data.data.item));
+        dispatch(appSetStatusAC('succeeded'));
+      } else {
+        dispatch(appSetErrorAC(resp.data.messages[0]));
+        dispatch(appSetStatusAC('failed'));
+      }
+    })
+    .catch((err: AxiosError) => {
+      handleServerNetworkError(dispatch, err.message);
+    });
 };
 
 export const changeTodolistTitleTC = (todolisID: string, title: string) => (dispatch: Dispatch) => {
+  dispatch(appSetStatusAC('loading'));
+
   todolistsAPI.updateTodolist(todolisID, title).then(resp => {
     dispatch(changeTodolistTitleAC(title, todolisID));
+    dispatch(appSetStatusAC('succeeded'));
   });
 };
