@@ -12,6 +12,7 @@ import { KeyType } from '../../state/todolists-reducer';
 import { TaskType } from '../../../api/todolists-api';
 import { addTaskTC, fetchTasksTC, UpdateDomainTaskModelType } from '../../state/task-reducer';
 import { RequestStatusType } from '../../state/app-reducer';
+import { Redirect } from 'react-router-dom';
 
 type PropsType = {
   title: string;
@@ -28,9 +29,14 @@ type PropsType = {
 const Todolist = React.memo((props: PropsType) => {
   const dispatch = useDispatch();
   const tasks = useSelector<AppRootState, Array<TaskType>>(state => state.task[props.id]);
-  console.log(props.entityStatus);
+  const isLoggedIn = useSelector<AppRootState, boolean>(state => state.login.isLoggedIn);
+
   useEffect(() => {
-    dispatch(fetchTasksTC(props.id));
+    if (!isLoggedIn) {
+      return;
+    } else {
+      dispatch(fetchTasksTC(props.id));
+    }
   }, []);
 
   const changeAllFilter = useCallback(() => props.changeFilter('all', props.id), [props]);

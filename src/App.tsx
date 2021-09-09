@@ -1,13 +1,9 @@
 import React, { useCallback, useEffect } from 'react';
-import Todolist from './modules/components/Todolist/Todolist';
 import './App.scss';
-import AddItemForm from './modules/components/AddItemForm/AddItemForm';
 import AppBar from '@material-ui/core/AppBar';
-import { Container, Toolbar, Button, Typography } from '@material-ui/core';
+import { Toolbar, Button, Typography, CircularProgress } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import IconButton from '@material-ui/core/IconButton';
-import { Grid } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
 import {
   changeTodolistFilterAC,
   KeyType,
@@ -17,13 +13,16 @@ import {
   addTodolistTC,
   changeTodolistTitleTC,
 } from './modules/state/todolists-reducer';
-import { addTaskAC, updateTaskTC } from './modules/state/task-reducer';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppRootState } from './modules/state/store/store';
 import { TaskType } from './api/todolists-api';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { RequestStatusType } from './modules/state/app-reducer';
+import { logoutTC, RequestStatusType } from './modules/state/app-reducer';
 import { ErrorSnackbar } from './modules/components/ErrorSnackbar/ErrorSnackbar';
+import { Todolists } from './modules/components/Todolists/Todolists';
+import { Login } from './modules/components/Login/Login';
+import { Redirect, Route, Switch } from 'react-router-dom';
+import { initializeAppTC } from './modules/state/app-reducer';
 
 export type TasksStateType = {
   [key: string]: Array<TaskType>;
@@ -31,12 +30,15 @@ export type TasksStateType = {
 
 const App = React.memo(() => {
   useEffect(() => {
+    dispatch(initializeAppTC());
     dispatch(fetchTodolistsThunk);
   }, []);
 
   const dispatch = useDispatch();
   const todolist = useSelector<AppRootState, Array<TodolistDomainType>>(state => state.todolist);
+  const initialize = useSelector<AppRootState, boolean>(state => state.app.initialize);
   const status = useSelector<AppRootState, RequestStatusType>(state => state.app.status);
+  const isLoggedIn = useSelector<AppRootState, boolean>(state => state.login.isLoggedIn);
 
   const addItem = useCallback(
     (title: string) => {
@@ -69,6 +71,18 @@ const App = React.memo(() => {
 
   console.log(todolist);
 
+  if (!initialize) {
+    return (
+      <div style={{ position: 'fixed', top: '30%', textAlign: 'center', width: '100%' }}>
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  const loggooutHandler = () => {
+    dispatch(logoutTC());
+  };
+
   return (
     <div className="App">
       <AppBar position="fixed">
@@ -77,40 +91,31 @@ const App = React.memo(() => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6">News</Typography>
-          <Button color="inherit" variant={'outlined'}>
-            Login
-          </Button>
+          {isLoggedIn && (
+            <Button color="inherit" variant={'outlined'} onClick={loggooutHandler}>
+              LOGOUT
+            </Button>
+          )}
         </Toolbar>
         {status === 'loading' && <LinearProgress color="secondary" />}
       </AppBar>
-
-      <Container fixed className="todoList__form">
-        <Grid container justifyContent="center">
-          <AddItemForm addItem={addItem} />
-        </Grid>
-
-        <Grid container spacing={3} justifyContent="center">
-          {todolist.map(list => {
-            return (
-              <Grid item key={list.id}>
-                <Paper elevation={3} className="paper__style">
-                  <Todolist
-                    title={list.title}
-                    changeFilter={changeFilter}
-                    filterTask={list.filter}
-                    id={list.id}
-                    removeTodolist={removeTodolist}
-                    changeTodolistTitle={changeTodolistTitle}
-                    addTaskAC={addTaskAC}
-                    updateTaskTC={updateTaskTC}
-                    entityStatus={list.entityStatus}
-                  />
-                </Paper>
-              </Grid>
-            );
-          })}
-        </Grid>
-      </Container>
+      <Switch>
+        <Route path={'/login'} render={() => <Login />} />
+        <Route
+          exact
+          path={'/'}
+          render={() => (
+            <Todolists
+              changeFilter={changeFilter}
+              removeTodolist={removeTodolist}
+              changeTodolistTitle={changeTodolistTitle}
+              addItem={addItem}
+            />
+          )}
+        />
+        <Route path={'/404'} render={() => <h1>404 PAGE NOT FOUND</h1>} />
+        <Redirect from={'*'} to={'/404'} />
+      </Switch>
 
       <ErrorSnackbar />
     </div>
